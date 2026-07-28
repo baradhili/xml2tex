@@ -72,6 +72,12 @@
               
               <xsl:variable name="root" select="/xml2tex:set" as="element(xml2tex:set)"/>
               <xsl:variable name="imports" select="/xml2tex:set/xml2tex:set" as="element(xml2tex:set)+"/>
+              
+              <xsl:template match="@* | node()">
+                <xsl:copy>
+                  <xsl:apply-templates select="@*, node()"/>
+                </xsl:copy>
+              </xsl:template>
 
               <xsl:template match="/xml2tex:set">
                 <xsl:copy>
@@ -91,15 +97,15 @@
                     </xsl:copy>
                   </xsl:for-each>
 
-                  <xsl:copy-of select="xml2tex:ns, $imports/xml2tex:ns,
-                                       xml2tex:style, $imports/xml2tex:style,
-                                       (xml2tex:preamble, $imports/xml2tex:preamble)[1],
-                                       (xml2tex:front, $imports/xml2tex:front)[1],
-                                       (xml2tex:back, $imports/xml2tex:back)[1],
-                                       $imports/xml2tex:template,
-                                       $imports/xml2tex:regex,
-                                       xml2tex:template,
-                                       xml2tex:regex"/>
+                  <xsl:apply-templates select="xml2tex:ns, $imports/xml2tex:ns,
+                                               xml2tex:style, $imports/xml2tex:style,
+                                               (xml2tex:preamble, $imports/xml2tex:preamble)[1],
+                                               (xml2tex:front, $imports/xml2tex:front)[1],
+                                               (xml2tex:back, $imports/xml2tex:back)[1],
+                                               $imports/xml2tex:template,
+                                               $imports/xml2tex:regex,
+                                               xml2tex:template,
+                                               xml2tex:regex"/>
                   <charmap>
                     <xsl:copy-of select="($imports/xml2tex:charmap/@ignore-imported-charmaps, xml2tex:charmap/@ignore-imported-charmaps)[1],
                                          xml2tex:charmap/xml2tex:char"/>
@@ -107,6 +113,14 @@
                       <xsl:copy-of select="$imports/xml2tex:charmap/xml2tex:char[not(@character = /xml2tex:set/xml2tex:charmap/xml2tex:char/@character)]"/>
                     </xsl:if>
                   </charmap>
+                </xsl:copy>
+              </xsl:template>
+              
+              <xsl:template match="xml2tex:template
+                                  |xml2tex:regex">
+                <xsl:copy>
+                  <xsl:attribute name="xml:base" select="base-uri()"/>
+                  <xsl:apply-templates select="@* except @xml:base, node()"/>
                 </xsl:copy>
               </xsl:template>
               
